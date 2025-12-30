@@ -1,0 +1,90 @@
+version: "3.8"
+
+services:
+
+  ## 🎵 SELF-HOSTED MUSIC: NAVIDROME (Traefik Labels Added)
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
+    user: 1000:1000 # Best Practice: Define user here for file access
+    environment:
+      - ND_SCANINTERVAL=30
+      - ND_MUSICFOLDER=/music
+      - TZ=Asia/Jerusalem
+    volumes:
+      - ./data/navidrome:/data
+      - ./media/music:/music # Read-only for safety
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.navidrome.rule=Host(`navidrome.localdev`)"
+      - "traefik.http.routers.navidrome.entrypoints=web"
+      - "traefik.http.services.navidrome.loadbalancer.server.port=4533" # Navidrome's internal web port
+    networks:
+      - internal-proxy
+    restart: unless-stopped
+
+  ## 💿 MUSIC MANAGEMENT: LIDARR (Traefik Labels Added)
+  lidarr:
+    image: linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+    volumes:
+      - ./data/lidarr:/config
+      - ./media/music:/music
+      - ./media/downloads:/downloads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lidarr.rule=Host(`lidarr.localdev`)"
+      - "traefik.http.routers.lidarr.entrypoints=web"
+      - "traefik.http.services.lidarr.loadbalancer.server.port=8686" # Lidarr's internal web port
+    networks:
+      - internal-proxy
+    restart: unless-stopped
+
+  ## 🔍 INDEXER GATEWAY: PROWLARR (No changes needed)
+  prowlarr:
+    image: linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+    volumes:
+      - ./data/prowlarr:/config
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.localdev`)"
+      - "traefik.http.routers.prowlarr.entrypoints=web"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+    networks:
+      - internal-proxy
+    restart: unless-stopped
+
+  ## ⬇️ DOWNLOAD CLIENT: QBITTORRENT (No changes needed)
+  qbittorrent:
+    image: linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+      - WEBUI_PORT=8080
+    volumes:
+      - ./data/qbittorrent:/config
+      - ./media/downloads:/downloads
+      - ./media/incomplete:/incomplete
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.localdev`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=web"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+    networks:
+      - internal-proxy
+    restart: unless-stopped
+
+networks:
+  internal-proxy:
+    external: true

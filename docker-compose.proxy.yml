@@ -1,0 +1,35 @@
+
+services:
+  ## 🚀 REVERSE PROXY: TRAEFIK
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command:
+      # Enable Docker provider and hide containers by default
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Define entry points
+      - "--entrypoints.web.address=:80"
+      - "--api.insecure=true"
+    ports:
+      - "80:80"        # The main web entry point
+      - "8080:8080"    # Traefik Dashboard (Insecure API)
+    volumes:
+      # CRITICAL: Traefik needs access to the Docker socket to discover containers
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      # Traefik Dashboard setup
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.localdev`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=web"
+    networks:
+      - internal-proxy
+    restart: unless-stopped
+
+## NEW SECTION: Define the custom network (The network creator)
+networks:
+  internal-proxy:
+    driver: bridge
+    # Best Practice: Give your network a specific name for easier external linking
+    name: internal-proxy
