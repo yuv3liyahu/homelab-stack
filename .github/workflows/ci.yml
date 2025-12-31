@@ -1,0 +1,23 @@
+name: CI - Validate Docker Compose
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Traefik stack
+        run: docker compose -f docker-compose.proxy.yml config -q
+
+      - name: Validate Media stack
+        run: docker compose -f docker-compose.media.yml config -q
+
+      - name: Validate Monitoring stack
+        run: docker compose -f docker-compose.monitoring.yml config -q

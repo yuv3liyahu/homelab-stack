@@ -1,0 +1,13 @@
+# Runtime container data (NEVER commit)
+data/
+media/
+
+# Downloads / test files
+*.mp3
+
+# Environment & secrets
+.env
+*.env
+
+# Logs
+*.log
