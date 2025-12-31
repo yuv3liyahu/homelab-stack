@@ -1,0 +1,20 @@
+name: CI (break-ci only)
+
+on:
+  push:
+    branches: [ "break-ci" ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Traefik stack
+        run: docker compose -f docker-compose.proxy.yml config -q
+
+      - name: Validate Media stack
+        run: docker compose -f docker-compose.media.yml config -q
+
+      - name: Validate Monitoring stack
+        run: docker compose -f docker-compose.monitoring.yml config -q
