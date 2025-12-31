@@ -4,7 +4,7 @@ services:
 
   ## 🎵 SELF-HOSTED MUSIC: NAVIDROME (Traefik Labels Added)
   navidrome:
-    image: deluan/navidrome:latest
+#    image: deluan/navidrome:latest
     container_name: navidrome
     user: 1000:1000 # Best Practice: Define user here for file access
     environment:
